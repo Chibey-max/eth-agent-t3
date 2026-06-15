@@ -1,0 +1,31 @@
+package z:eth-agent@0.1.0;
+
+world eth-agent {
+  import host:tenant/tenant-context@1.0.0;
+  import host:interfaces/logging@2.1.0;
+  import host:interfaces/kv-store@2.1.0;
+  import host:interfaces/http@2.1.0;
+
+  export contracts;
+}
+
+interface contracts {
+  // Uniform envelope used by every T3N-callable contract function.
+  record generic-input {
+    input:        option<list<u8>>,
+    user-profile: option<list<u8>>,
+    context:      option<list<u8>>,
+  }
+
+  // Check agent is whitelisted before any action
+  check-policy:     func(req: generic-input) -> result<list<u8>, string>;
+
+  // Execute an ETH transfer via RPC (amount + to address validated in-enclave)
+  execute-transfer: func(req: generic-input) -> result<list<u8>, string>;
+
+  // Query on-chain token balance (read-only)
+  get-balance:      func(req: generic-input) -> result<list<u8>, string>;
+
+  // Validate and queue a contract interaction
+  queue-action:     func(req: generic-input) -> result<list<u8>, string>;
+}

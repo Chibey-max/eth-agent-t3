@@ -5,6 +5,10 @@ world eth-agent {
   import host:interfaces/logging@2.1.0;
   import host:interfaces/kv-store@2.1.0;
   import host:interfaces/http@2.1.0;
+  // PII substitution happens in the host — plaintext never enters WASM
+  import host:interfaces/http-with-placeholders@2.1.0;
+  // wall-clock time is the only time source available inside WASM
+  import host:interfaces/time@2.1.0;
 
   export contracts;
 }
@@ -17,15 +21,22 @@ interface contracts {
     context:      option<list<u8>>,
   }
 
-  // Check agent is whitelisted before any action
+  // -- Core agent functions ----------------------------------------------
   check-policy:     func(req: generic-input) -> result<list<u8>, string>;
-
-  // Execute an ETH transfer via RPC (amount + to address validated in-enclave)
   execute-transfer: func(req: generic-input) -> result<list<u8>, string>;
-
-  // Query on-chain token balance (read-only)
   get-balance:      func(req: generic-input) -> result<list<u8>, string>;
-
-  // Validate and queue a contract interaction
   queue-action:     func(req: generic-input) -> result<list<u8>, string>;
+
+  // -- Payroll agent functions -------------------------------------------
+  // Enroll an employee: stores a salary policy keyed by employee DID.
+  // Bank details live in the user profile, never in contract state.
+  enroll-employee:  func(req: generic-input) -> result<list<u8>, string>;
+
+  // Verify an employee is enrolled and within their salary band.
+  verify-employee:  func(req: generic-input) -> result<list<u8>, string>;
+
+  // Run a payroll disbursement. The host substitutes
+  // {{profile.bank_account}} / {{profile.routing}} into the call
+  // inside the enclave -- the agent and contract never see them.
+  process-payroll:  func(req: generic-input) -> result<list<u8>, string>;
 }

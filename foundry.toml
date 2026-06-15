@@ -1,0 +1,13 @@
+[profile.default]
+src = "contracts/src"
+out = "contracts/out"
+libs = ["lib"]
+test = "contracts/test"
+script = "contracts/script"
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+mantle = "${MANTLE_RPC_URL}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }

@@ -1,0 +1,19 @@
+{
+  "name": "eth-agent-kit",
+  "version": "0.2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@terminal3/t3n-sdk": "latest",
+    "viem": "^2.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}

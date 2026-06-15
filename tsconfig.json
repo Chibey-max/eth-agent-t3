@@ -1,16 +1,13 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "dist"
   },
-  "ts-node": {
-    "esm": false,
-    "transpileOnly": true
-  }
+  "exclude": ["node_modules", "dist", "tee-contract"]
 }

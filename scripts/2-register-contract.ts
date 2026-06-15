@@ -1,28 +1,24 @@
 /**
- * Script 2 — Register the compiled WASM contract on T3N testnet
- * Run AFTER: cargo build --target wasm32-wasip2 --release
- * Run: ts-node scripts/2-register-contract.ts
+ * Script 2 — Publish WASM contract to T3N testnet
+ * Run AFTER: cd tee-contract && cargo build --target wasm32-wasip2 --release
+ * Run: npm run register
  */
 import "dotenv/config";
 import { writeFileSync } from "fs";
-import { createT3Session } from "../packages/eth-agent-kit/src/t3/client";
-import { registerContract } from "../packages/eth-agent-kit/src/t3/register";
+import { createT3Session } from "../packages/eth-agent-kit/src/t3/client.js";
+import { registerContract } from "../packages/eth-agent-kit/src/t3/register.js";
 
 async function main() {
-  console.log("=== Step 2: Registering TEE contract on T3N ===\n");
+  console.log("=== Step 2: Publishing TEE contract to T3N ===\n");
 
   const session = await createT3Session();
-  const { contractId, scriptName } = await registerContract(session.tenant, session.tenantDid);
+  const { scriptName, version } = await registerContract(session.tenant);
 
-  // Save contract ID for next scripts
-  const config = { contractId, scriptName, tenantDid: session.tenantDid };
-  writeFileSync(".contract-config.json", JSON.stringify(config, null, 2));
-
-  console.log("\n✓ Saved contract config to .contract-config.json");
-  console.log("  Proceed to step 3: seed secrets.");
+  // Save for subsequent scripts
+  const cfg = { scriptName, version, tenantDid: session.tenantDid };
+  writeFileSync(".contract-config.json", JSON.stringify(cfg, null, 2));
+  console.log("\n✓ Saved .contract-config.json");
+  console.log("  Next: npm run seed");
 }
 
-main().catch((err) => {
-  console.error("✗", err.message);
-  process.exit(1);
-});
+main().catch((e) => { console.error("✗", e.message); process.exit(1); });

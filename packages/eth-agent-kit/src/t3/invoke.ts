@@ -1,112 +1,93 @@
+/**
+ * Contract invocation — uses the real TenantClient.contracts.execute() API.
+ *
+ * Real SDK:
+ *   TenantClient.contracts.execute(tail, { version, functionName, input })
+ *   TenantClient.canonicalName(tail) -> full script name
+ *   getScriptVersion(nodeUrl, scriptName) -> semver string
+ */
 import {
-  T3nClient,
-  setEnvironment,
-  loadWasmComponent,
-  eth_get_address,
-  metamask_sign,
-  createEthAuthInput,
   getScriptVersion,
   getNodeUrl,
 } from "@terminal3/t3n-sdk";
-import { scriptName } from "./register";
+import type { TenantClient } from "@terminal3/t3n-sdk";
+import { CONTRACT_TAIL, CONTRACT_VERSION } from "./register.js";
 
-export interface AgentSession {
-  agentClient: T3nClient;
-  agentDid: string;
+export interface ContractSession {
+  tenant: TenantClient;
   scriptName: string;
-  scriptVersion: string;
+  version: string;
 }
 
-/**
- * Creates a T3N session for the *agent* (not the tenant/owner).
- * Agents authenticate as themselves — their DID is read from the session.
- *
- * Follows: https://docs.terminal3.io/developers/adk/get-started/walkthrough/invoke-contract
- */
-export async function createAgentSession(tenantDid: string): Promise<AgentSession> {
-  const agentKey = process.env.AGENT_PRIVATE_KEY;
-  if (!agentKey) throw new Error("AGENT_PRIVATE_KEY not set");
+export async function createContractSession(tenant: TenantClient): Promise<ContractSession> {
+  const scriptName = tenant.canonicalName(CONTRACT_TAIL);
+  let version = CONTRACT_VERSION;
+  try {
+    version = await getScriptVersion(getNodeUrl(), scriptName);
+  } catch {
+    // fall back to published version
+  }
+  return { tenant, scriptName, version };
+}
 
-  setEnvironment("testnet");
+// ── contract function callers ─────────────────────────────────────────────
 
-  const wasmComponent = await loadWasmComponent();
-  const agentAddress = eth_get_address(agentKey);
-
-  const agentClient = new T3nClient({
-    wasmComponent,
-    handlers: {
-      EthSign: metamask_sign(agentAddress, undefined, agentKey),
-    },
+async function call<T>(
+  session: ContractSession,
+  functionName: string,
+  input: Record<string, unknown>
+): Promise<T> {
+  const result = await session.tenant.contracts.execute(CONTRACT_TAIL, {
+    version: session.version,
+    functionName,
+    input,
   });
-
-  await agentClient.handshake();
-  const did = await agentClient.authenticate(createEthAuthInput(agentAddress));
-  const agentDid = did.value;
-
-  const name = scriptName(tenantDid);
-  const version = await getScriptVersion(getNodeUrl(), name);
-
-  console.log(`✓ Agent session established`);
-  console.log(`  agent did     : ${agentDid}`);
-  console.log(`  contract      : ${name}@${version}`);
-
-  return { agentClient, agentDid, scriptName: name, scriptVersion: version };
+  return result as T;
 }
-
-// ── Contract function callers ──────────────────────────────────────────────
 
 export async function checkPolicy(
-  session: AgentSession,
+  session: ContractSession,
   agentDid: string,
   action: string,
   amountWei?: string
-): Promise<{ allowed: boolean; reason: string }> {
-  return session.agentClient.executeAndDecode({
-    script_name: session.scriptName,
-    script_version: session.scriptVersion,
-    function_name: "check-policy",
-    input: { agent_did: agentDid, action, amount_wei: amountWei },
+) {
+  return call<{ allowed: boolean; reason: string }>(session, "check-policy", {
+    agent_did: agentDid,
+    action,
+    amount_wei: amountWei,
   });
 }
 
 export async function executeTransfer(
-  session: AgentSession,
-  params: {
-    to: string;
-    amountWei: string;
-    chainId: number;
-    token?: string;
-  }
-): Promise<{ success: boolean; tx_hash?: string; error?: string }> {
-  return session.agentClient.executeAndDecode({
-    script_name: session.scriptName,
-    script_version: session.scriptVersion,
-    function_name: "execute-transfer",
-    input: {
-      agent_did: session.agentDid,
+  session: ContractSession,
+  params: { to: string; amountWei: string; chainId: number; token?: string }
+) {
+  return call<{ success: boolean; tx_hash?: string; error?: string }>(
+    session,
+    "execute-transfer",
+    {
+      agent_did: process.env.T3N_DID!,
       to: params.to,
       amount_wei: params.amountWei,
       chain_id: params.chainId,
       token: params.token,
-    },
-  });
+    }
+  );
 }
 
 export async function getBalance(
-  session: AgentSession,
+  session: ContractSession,
   address: string,
   chainId: number
-): Promise<{ address: string; balance_wei: string }> {
-  return session.agentClient.executeAndDecode({
-    script_name: session.scriptName,
-    script_version: session.scriptVersion,
-    function_name: "get-balance",
-    input: { address, chain_id: chainId },
+) {
+  return call<{ address: string; balance_wei: string }>(session, "get-balance", {
+    address,
+    chain_id: chainId,
   });
 }
 
 export async function queueAction(
-  session: AgentSession,
+  session: ContractSession,
   params: {
     action: string;
     target: string;
@@ -114,18 +95,74 @@ export async function queueAction(
     calldata?: string;
     delaySeconds: number;
   }
-): Promise<{ queued: boolean; queue_id: string; executes_after: number }> {
-  return session.agentClient.executeAndDecode({
-    script_name: session.scriptName,
-    script_version: session.scriptVersion,
-    function_name: "queue-action",
-    input: {
-      agent_did: session.agentDid,
+) {
+  return call<{ queued: boolean; queue_id: string; executes_after: number }>(
+    session,
+    "queue-action",
+    {
+      agent_did: process.env.T3N_DID!,
       action: params.action,
       target: params.target,
       amount_wei: params.amountWei,
       calldata: params.calldata,
       delay_seconds: params.delaySeconds,
-    },
-  });
+    }
+  );
+}
+
+// ── payroll contract functions ────────────────────────────────────────────
+
+export async function enrollEmployee(
+  session: ContractSession,
+  params: {
+    employeeDid: string;
+    salaryWei: string;
+    currency: string;
+    bandMinWei: string;
+    bandMaxWei: string;
+  }
+) {
+  return call<{ enrolled: boolean; employee_did: string }>(
+    session,
+    "enroll-employee",
+    {
+      employee_did: params.employeeDid,
+      salary_wei: params.salaryWei,
+      currency: params.currency,
+      band_min_wei: params.bandMinWei,
+      band_max_wei: params.bandMaxWei,
+    }
+  );
+}
+
+export async function verifyEmployee(
+  session: ContractSession,
+  employeeDid: string
+) {
+  return call<{ verified: boolean; reason: string; salary_wei?: string }>(
+    session,
+    "verify-employee",
+    { employee_did: employeeDid }
+  );
+}
+
+export async function processPayroll(
+  session: ContractSession,
+  params: {
+    employeeDid: string;
+    amountWei: string;
+    disburseUrl: string;
+    idempotencyKey: string;
+  }
+) {
+  return call<{ paid: boolean; reason: string; http_status: number }>(
+    session,
+    "process-payroll",
+    {
+      employee_did: params.employeeDid,
+      amount_wei: params.amountWei,
+      disburse_url: params.disburseUrl,
+      idempotency_key: params.idempotencyKey,
+    }
+  );
 }

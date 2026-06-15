@@ -9,19 +9,22 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "setup": "ts-node scripts/0-setup.ts",
-    "register": "ts-node scripts/2-register-contract.ts",
-    "seed": "ts-node scripts/3-seed-secrets.ts",
-    "invoke": "ts-node scripts/4-invoke-agent.ts",
-    "payroll": "ts-node scripts/5-run-payroll.ts"
+    "register": "tsx scripts/2-register-contract.ts",
+    "seed": "tsx scripts/3-seed-secrets.ts",
+    "invoke": "tsx scripts/4-invoke-agent.ts",
+    "payroll": "tsx scripts/5-run-payroll.ts",
+    "verify": "tsx scripts/1-verify-connection.ts"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
     "ts-node": "^10.9.0",
-    "@types/node": "^20.0.0"
+    "tsx": "^4.7.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "groq-sdk": "^1.2.1"
   }
 }

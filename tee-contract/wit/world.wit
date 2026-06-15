@@ -1,42 +1,21 @@
 package z:eth-agent@0.1.0;
 
 world eth-agent {
-  import host:tenant/tenant-context@1.0.0;
-  import host:interfaces/logging@2.1.0;
-  import host:interfaces/kv-store@2.1.0;
-  import host:interfaces/http@2.1.0;
-  // PII substitution happens in the host — plaintext never enters WASM
-  import host:interfaces/http-with-placeholders@2.1.0;
-  // wall-clock time is the only time source available inside WASM
-  import host:interfaces/time@2.1.0;
-
   export contracts;
 }
 
 interface contracts {
-  // Uniform envelope used by every T3N-callable contract function.
   record generic-input {
     input:        option<list<u8>>,
     user-profile: option<list<u8>>,
     context:      option<list<u8>>,
   }
 
-  // -- Core agent functions ----------------------------------------------
   check-policy:     func(req: generic-input) -> result<list<u8>, string>;
   execute-transfer: func(req: generic-input) -> result<list<u8>, string>;
   get-balance:      func(req: generic-input) -> result<list<u8>, string>;
   queue-action:     func(req: generic-input) -> result<list<u8>, string>;
-
-  // -- Payroll agent functions -------------------------------------------
-  // Enroll an employee: stores a salary policy keyed by employee DID.
-  // Bank details live in the user profile, never in contract state.
   enroll-employee:  func(req: generic-input) -> result<list<u8>, string>;
-
-  // Verify an employee is enrolled and within their salary band.
   verify-employee:  func(req: generic-input) -> result<list<u8>, string>;
-
-  // Run a payroll disbursement. The host substitutes
-  // {{profile.bank_account}} / {{profile.routing}} into the call
-  // inside the enclave -- the agent and contract never see them.
   process-payroll:  func(req: generic-input) -> result<list<u8>, string>;
 }

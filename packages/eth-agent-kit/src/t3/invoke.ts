@@ -151,16 +151,18 @@ export async function processPayroll(
   params: {
     employeeDid: string;
     amountWei: string;
+    bandMaxWei: string;  // per-employee band max (120% of base salary)
     disburseUrl: string;
     idempotencyKey: string;
   }
 ) {
-  return call<{ paid: boolean; reason: string; http_status: number }>(
+  return call<{ paid: boolean; reason: string; http_status: number; band_max_wei?: string; tee_verdict?: string; injection_blocked?: boolean }>(
     session,
     "process-payroll",
     {
       employee_did: params.employeeDid,
       amount_wei: params.amountWei,
+      band_max_wei: params.bandMaxWei,
       disburse_url: params.disburseUrl,
       idempotency_key: params.idempotencyKey,
     }

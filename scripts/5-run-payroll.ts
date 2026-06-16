@@ -63,9 +63,13 @@ async function main() {
     const key = p.employee_did + ":" + new Date().toISOString().slice(0, 7);
     process.stdout.write("  " + name + ": ");
     try {
+      const emp = roster.find((r) => r.employee_did === p.employee_did);
+      const baseSalary = BigInt(emp ? emp.base_salary_wei : "5000000000000000000");
+      const bandMaxWei = String(baseSalary * BigInt(12) / BigInt(10)); // 120% of base
       const result = await processPayroll(contract, {
         employeeDid: p.employee_did,
         amountWei: p.amount_wei,
+        bandMaxWei,
         disburseUrl: disburseUrl,
         idempotencyKey: key,
       });

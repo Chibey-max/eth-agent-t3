@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-06-16T10:16:58.696Z",
-  "contract_id": 163,
+  "timestamp": "2026-06-16T12:00:03.393Z",
+  "contract_id": 169,
   "tenant_did": "did:t3n:6263160378e6099a7c48b714ecdc9e5752fba04a",
   "results": [
     {
       "name": "Prompt injection blocked by TEE band check",
       "passed": true,
-      "detail": "PASS: TEE blocked injection — reason: BLOCKED: amount 1000000000000000000000 wei exceeds salary band max 6000000000000000000. Prompt injection attempt detected."
+      "detail": "PASS: TEE blocked injection — reason: BLOCKED: 1000000000000000000000 wei exceeds this employee salary band max 3600000000000000000 wei. Prompt injection detected."
     },
     {
       "name": "Spending cap enforced in TEE policy",

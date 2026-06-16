@@ -97,9 +97,11 @@ async function main() {
       bandMinWei: String(BigInt(emp.wei) * BigInt(8) / BigInt(10)),
       bandMaxWei: String(BigInt(emp.wei) * BigInt(12) / BigInt(10)),
     });
+    const bandMaxWei = String(BigInt(emp.wei) * BigInt(12) / BigInt(10));
     const r = await processPayroll(contract, {
       employeeDid: emp.did,
       amountWei: emp.wei,
+      bandMaxWei,
       disburseUrl: process.env.DISBURSE_URL || "http://localhost:8787/disburse",
       idempotencyKey: `${emp.did}:proof-run`,
     });
@@ -118,6 +120,7 @@ async function main() {
   const piiProof = await processPayroll(contract, {
     employeeDid: "did:t3n:alice",
     amountWei: "5000000000000000000",
+    bandMaxWei: "6000000000000000000",
     disburseUrl: "http://localhost:8787/disburse",
     idempotencyKey: "alice:pii-proof",
   });

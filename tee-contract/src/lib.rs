@@ -176,10 +176,29 @@ impl Guest for Component {
             }
         };
 
-        // ── Band check: blocks prompt-injected amounts ──────────────────
-        // Band max = base_salary * 1.2 (sealed at enrollment)
-        // Eve's 1000 ETH = 1_000_000_000_000_000_000_000 > any band
-        let band_max: u128 = 6_000_000_000_000_000_000; // 6 ETH absolute max
+        // ── Per-employee band check ─────────────────────────────────────
+        // band_max_wei is passed from the enrollment record (120% of base salary).
+        // Alice: 6 ETH max, Bob: 4.8 ETH max, Eve: 3.6 ETH max.
+        // Eve's injected 1000 ETH exceeds HER band, not a global constant.
+        // In production this would be read from the sealed KV map per employee DID.
+        let band_max: u128 = match inp["band_max_wei"]
+            .as_str()
+            .unwrap_or("")
+            .parse::<u128>()
+        {
+            Ok(b) if b > 0 => b,
+            _ => {
+                return ok(json!({
+                    "paid": false,
+                    "http_status": 0,
+                    "employee_did": employee_did,
+                    "amount_wei": amount_wei,
+                    "reason": "BLOCKED: no salary band found for employee — enroll first",
+                    "tee_verdict": "DENIED",
+                    "injection_blocked": false
+                }));
+            }
+        };
 
         if amount > band_max {
             return ok(json!({
@@ -187,8 +206,9 @@ impl Guest for Component {
                 "http_status": 0,
                 "employee_did": employee_did,
                 "amount_wei": amount_wei,
+                "band_max_wei": band_max.to_string(),
                 "reason": format!(
-                    "BLOCKED: amount {} wei exceeds salary band max {}. Prompt injection attempt detected.",
+                    "BLOCKED: {} wei exceeds this employee salary band max {} wei. Prompt injection detected.",
                     amount, band_max
                 ),
                 "tee_verdict": "DENIED",

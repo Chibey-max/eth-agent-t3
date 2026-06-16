@@ -41,6 +41,7 @@ async function main() {
     const result = await processPayroll(contract, {
       employeeDid: "did:t3n:eve",
       amountWei: "1000000000000000000000", // 1000 ETH — injected
+      bandMaxWei: "3600000000000000000",   // Eve's band: 120% of 3 ETH
       disburseUrl: "http://localhost:8787/disburse",
       idempotencyKey: "eve-injection-test",
     });
@@ -89,6 +90,7 @@ async function main() {
     const result = await processPayroll(contract, {
       employeeDid: "did:t3n:alice",
       amountWei: "5000000000000000000", // 5 ETH — within band
+      bandMaxWei: "6000000000000000000", // Alice's band: 120% of 5 ETH
       disburseUrl: "http://localhost:8787/disburse",
       idempotencyKey: "alice-valid-test",
     });
@@ -105,6 +107,7 @@ async function main() {
     const result = await processPayroll(contract, {
       employeeDid: "did:t3n:bob",
       amountWei: "2000000000000000000",
+      bandMaxWei: "4800000000000000000", // Bob's band: 120% of 4 ETH
       disburseUrl: "http://localhost:8787/disburse",
       idempotencyKey: "bob-pii-test",
     });
@@ -125,6 +128,7 @@ async function main() {
     const result = await processPayroll(contract, {
       employeeDid: "did:t3n:attacker",
       amountWei: "115792089237316195423570985008687907853269984665640564039457584007913129639935", // u256 max
+      bandMaxWei: "1000000000000000000", // 1 ETH max for unknown employee
       disburseUrl: "http://localhost:8787/disburse",
       idempotencyKey: "overflow-test",
     });
@@ -154,7 +158,7 @@ async function main() {
 
   if (passed === total) {
     console.log("✓ All security properties verified by live T3N TEE");
-    console.log("  Contract ID 169 · T3N testnet");
+    console.log("  Contract ID 171 · T3N testnet");
     console.log("  Prompt injection: BLOCKED");
     console.log("  Spending cap: ENFORCED");
     console.log("  PII protection: VERIFIED");

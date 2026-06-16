@@ -316,7 +316,7 @@ export default function Page() {
           </div>
           <div style={{ width: 1, height: 20, background: C.border }} />
           <div style={{ fontFamily: MONO, fontSize: 10, color: C.muted }}>
-            CONTRACT ID 163 · SEPOLIA TESTNET
+            CONTRACT ID 173 · SEPOLIA TESTNET
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -383,8 +383,8 @@ export default function Page() {
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
                   ["NODE", "sg.testnet.t3n.io"],
-                  ["CONTRACT", "ID 163"],
-                  ["VERSION", "0.1.0"],
+                  ["CONTRACT", "ID 173"],
+                  ["VERSION", "0.3.2"],
                 ].map(([k, v]) => (
                   <div key={k} style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ fontFamily: MONO, fontSize: 9, color: C.muted }}>{k}</span>
@@ -433,7 +433,7 @@ export default function Page() {
                   color={C.blue}
                 />
                 <ActionButton
-                  label={loading === "get-balance" ? "⟳ querying..." : "② Query balance in TEE"}
+                  label={loading === "get-balance" ? "⟳ querying..." : "② Query live balance"}
                   onClick={() => callApi("get-balance", { address: toAddr, chainId: 11155111 }, "balance")}
                   disabled={loading !== null}
                   color={C.muted}

@@ -76,7 +76,8 @@ impl Guest for Component {
     }
 
     // ── get-balance ───────────────────────────────────────────────────────
-    // Queries balance via sealed RPC URL — address never exposed to agent.
+    // Live RPC host imports are not enabled on this T3N testnet runtime.
+    // The dashboard bridge falls back to a server-side live Sepolia read.
     fn get_balance(req: GenericInput) -> Result<Vec<u8>, String> {
         let inp = parse(&req.input)?;
         let address = inp["address"].as_str().unwrap_or("");
@@ -84,11 +85,11 @@ impl Guest for Component {
 
         ok(json!({
             "address": address,
-            "balance_wei": "1000000000000000000",
-            "balance_eth": "1.0",
             "chain_id": chain_id,
             "tee_verified": true,
-            "note": "balance queried via TEE-sealed RPC endpoint"
+            "live_balance_available_in_tee": false,
+            "fallback_required": true,
+            "reason": "T3N testnet runtime did not wire HTTP/KV host imports for this contract"
         }))
     }
 

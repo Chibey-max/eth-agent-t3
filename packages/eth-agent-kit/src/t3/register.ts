@@ -12,7 +12,7 @@ import { getScriptVersion, getNodeUrl } from "@terminal3/t3n-sdk";
 import type { TenantClient } from "@terminal3/t3n-sdk";
 
 export const CONTRACT_TAIL = "eth-agent-contracts";
-export const CONTRACT_VERSION = "0.3.0";
+export const CONTRACT_VERSION = "0.3.2";
 
 export async function registerContract(tenant: TenantClient) {
   const wasmPath = join(

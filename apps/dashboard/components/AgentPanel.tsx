@@ -116,7 +116,7 @@ export default function AgentPanel({ onLog, onAgentDid, onPolicyStatus }: Props)
         onClick={() => callApi("get-balance", { address: toAddress }, "balance")}
         disabled={loading !== null}
       >
-        {loading === "get-balance" ? "⟳ querying..." : "② Query balance (in TEE)"}
+        {loading === "get-balance" ? "⟳ querying..." : "② Query live balance"}
       </button>
 
       <button

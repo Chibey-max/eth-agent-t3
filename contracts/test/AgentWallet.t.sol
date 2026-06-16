@@ -7,7 +7,7 @@ import "../src/AgentWallet.sol";
 contract Receiver {
     uint256 public received;
     function ping() external payable { received += msg.value; }
-    receive() external payable {}
+    receive() external payable { received += msg.value; }
 }
 
 contract AgentWalletTest is Test {

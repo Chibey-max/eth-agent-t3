@@ -199,7 +199,7 @@ contract AgentWallet is ReentrancyGuard, Ownable {
 
     // ── Internal ───────────────────────────────────────────────────────────
 
-    function _enforcePolicyAndSpend(address agent, bytes calldata data, uint256 value) internal {
+    function _enforcePolicyAndSpend(address agent, bytes memory data, uint256 value) internal {
         AgentPolicy storage p = _policies[agent];
 
         // Per-action spending cap
@@ -207,7 +207,7 @@ contract AgentWallet is ReentrancyGuard, Ownable {
 
         // Selector whitelist (only for contract calls, not plain ETH transfers)
         if (data.length >= 4) {
-            bytes4 selector = bytes4(data[:4]);
+            bytes4 selector = bytes4(data[0]) | (bytes4(data[1]) >> 8) | (bytes4(data[2]) >> 16) | (bytes4(data[3]) >> 24);
             require(p.selectorWhitelist[selector], "AgentWallet: selector not whitelisted");
         }
 

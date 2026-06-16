@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-06-16T10:22:17.909Z",
+  "hackathon": "Terminal 3 Agent Dev Kit Bounty Challenge",
+  "submission": "ETH Agent T3 — TEE-Verified AI Payroll Agent",
+  "repo": "https://github.com/Chibey-max/eth-agent-t3",
+  "tee_authentication": {
+    "tenant_did": "did:t3n:6263160378e6099a7c48b714ecdc9e5752fba04a",
+    "tee_node": "https://cn-api.sg.testnet.t3n.terminal3.io",
+    "address": "0x8f7f0a4948247a094f63f3a4f54b69d34920bb1c",
+    "verified": true
+  },
+  "contract": {
+    "script_name": "z:6263160378e6099a7c48b714ecdc9e5752fba04a:eth-agent-contracts",
+    "version": "0.2.0",
+    "functions": [
+      "check-policy",
+      "execute-transfer",
+      "get-balance",
+      "queue-action",
+      "enroll-employee",
+      "verify-employee",
+      "process-payroll"
+    ]
+  },
+  "policy_enforcement": {
+    "legitimate_transfer": {
+      "allowed": true,
+      "amount_wei": "500000000000000"
+    },
+    "over_cap_transfer": {
+      "allowed": false,
+      "amount_wei": "999999999999999999"
+    },
+    "tee_enforced": true
+  },
+  "prompt_injection_demo": {
+    "results": [
+      {
+        "employee": "Alice",
+        "paid": true,
+        "reason": "disbursed via TEE-protected payment rail"
+      },
+      {
+        "employee": "Bob",
+        "paid": true,
+        "reason": "disbursed via TEE-protected payment rail"
+      },
+      {
+        "employee": "Eve ⚠",
+        "paid": false,
+        "reason": "BLOCKED: amount 1000000000000000000000 wei exceeds salary band max 6000000000000000000. Prompt injection attempt detected."
+      }
+    ],
+    "injection_blocked": true,
+    "pii_protection": "http-with-placeholders pattern (architected; mock rail in demo)"
+  },
+  "pii_protection": {
+    "method": "http-with-placeholders",
+    "status": "architected — contract builds the {{profile.*}} template and disbursement flow; live in-enclave substitution against a seeded profile is the next integration step",
+    "placeholders_in_template": [
+      "{{profile.full_name}}",
+      "{{profile.bank_account}}",
+      "{{profile.routing_number}}"
+    ],
+    "demo_rail": "mock disbursement endpoint validates that placeholders are not left unsubstituted",
+    "note": "The contract structure follows the T3N http-with-placeholders pattern; the demo uses a mock payout rail."
+  },
+  "on_chain_layer": {
+    "contract": "AgentWallet.sol",
+    "network": "Sepolia testnet",
+    "deployed": "not yet deployed — run: forge script contracts/script/Deploy.s.sol --broadcast",
+    "features": [
+      "spending cap",
+      "selector whitelist",
+      "daily limit",
+      "timelock queue",
+      "guardian/agent roles"
+    ],
+    "foundry_tests": "10 tests written in contracts/test/AgentWallet.t.sol — run `forge test` to verify",
+    "note": "Second enforcement layer — TEE + chain = two independent checks"
+  },
+  "summary": {
+    "layers": 3,
+    "sdk_features_used": [
+      "T3nClient auth",
+      "TenantClient",
+      "contracts.publish",
+      "contracts.execute",
+      "maps.create",
+      "executeControl",
+      "http-with-placeholders (architecture)",
+      "contracts.logs"
+    ],
+    "unique_features": [
+      "prompt injection block with live demo",
+      "three-layer trust enforcement",
+      "AI + TEE + chain combined",
+      "negative security tests",
+      "live dashboard with trust pipeline visualizer"
+    ],
+    "contract_id": 169,
+    "tee_node": "https://cn-api.sg.testnet.t3n.terminal3.io"
+  }
+}
